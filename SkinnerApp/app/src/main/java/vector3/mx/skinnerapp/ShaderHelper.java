@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 import static android.opengl.GLES20.GL_COMPILE_STATUS;
 import static android.opengl.GLES20.GL_FRAGMENT_SHADER;
 import static android.opengl.GLES20.GL_LINK_STATUS;
+import static android.opengl.GLES20.GL_VALIDATE_STATUS;
 import static android.opengl.GLES20.GL_VERTEX_SHADER;
 import static android.opengl.GLES20.glAttachShader;
 import static android.opengl.GLES20.glCompileShader;
@@ -20,6 +21,7 @@ import static android.opengl.GLES20.glGetShaderInfoLog;
 import static android.opengl.GLES20.glGetShaderiv;
 import static android.opengl.GLES20.glLinkProgram;
 import static android.opengl.GLES20.glShaderSource;
+import static android.opengl.GLES20.glValidateProgram;
 
 /**
  * Created by miMiau on 27/02/2018.
@@ -85,5 +87,13 @@ public class ShaderHelper {
             return 0;
         }
         return programObjectId;
+    }
+    public static boolean validateProgram(int programObjectId){
+        glValidateProgram(programObjectId);
+        final int validateStatus[] = new int[1];
+        glGetProgramiv(programObjectId, GL_VALIDATE_STATUS, validateStatus, 0);
+        Log.v(TAG, "Results of validating program: " + validateStatus[0]
+        + "\n" + " Log : " + glGetProgramInfoLog(programObjectId));
+        return validateStatus[0] != 0;
     }
 }
