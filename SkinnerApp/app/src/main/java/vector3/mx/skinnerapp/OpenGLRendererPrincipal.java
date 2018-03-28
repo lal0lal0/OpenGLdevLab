@@ -14,8 +14,10 @@ import static android.opengl.GLES20.glEnableVertexAttribArray;
 import static android.opengl.GLES20.glGetAttribLocation;
 import static android.opengl.GLES20.glGetUniformLocation;
 import static android.opengl.GLES20.glUniform4f;
+import static android.opengl.GLES20.glUniformMatrix4fv;
 import static android.opengl.GLES20.glUseProgram;
 import static android.opengl.GLES20.glVertexAttribPointer;
+import static android.opengl.Matrix.orthoM;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -31,12 +33,15 @@ import java.nio.FloatBuffer;
 
 public class OpenGLRendererPrincipal implements Renderer {
     private final Context context;
-    private static final int POSITION_COMPONENT_COUNT = 2;
+    private static final int POSITION_COMPONENT_COUNT = 4;
     private static final int BYTES_PER_FLOAT = 4;
     private static final String A_COLOR = "a_Color";
+    private static final String U_MATRIX = "u_Matrix";
+    private final float[] projectionMatrix = new float[16];
+    private int uMatrixLocation = 0;
     private static final int COLOR_COMPONENT_COUNT = 3;
     private static final int STRIDE = (POSITION_COMPONENT_COUNT + COLOR_COMPONENT_COUNT) * BYTES_PER_FLOAT;
-    private int aColorLocation;
+    private int aColorLocation = 0;
     //private static final String U_COLOR = "u_Color";
     private static final String A_POSITION = "a_Position";
     private int aPositionLocation = 0;
@@ -48,20 +53,20 @@ public class OpenGLRendererPrincipal implements Renderer {
     public OpenGLRendererPrincipal(Context context){
         this.context = context;
         float[] tableVerticesWithTriangles = {
-                //Order of coordinates X Y R G B
                 // Triangle Fan
-                0f, 0f, 1f, 1f, 1f,
-                -0.5f, -0.5f, 0.7f, 0.7f, 0.7f,
-                0.5f, -0.5f, 0.7f, 0.7f, 0.7f,
-                0.5f, 0.5f, 0.7f, 0.7f, 0.7f,
-                -0.5f, 0.5f, 0.7f, 0.7f, 0.7f,
-                -0.5f, -0.5f, 0.7f, 0.7f, 0.7f,
+                //  X       Y     Z        W      R     G     B
+                   0f,     0f,   0f,   1.5f,     1f,   1f,   1f,
+                -0.5f,  -0.8f,   0f,     1f,   0.7f, 0.7f, 0.7f,
+                 0.5f,  -0.8f,   0f,     1f,   0.7f, 0.7f, 0.7f,
+                 0.5f,   0.8f,   0f,     2f,   0.7f, 0.7f, 0.7f,
+                -0.5f,   0.8f,   0f,     2f,   0.7f, 0.7f, 0.7f,
+                -0.5f,  -0.8f,   0f,     1f,   0.7f, 0.7f, 0.7f,
                 // Line 1
-                -0.5f, 0f, 1f, 0f, 0f,
-                0.5f, 0f, 1f, 0f, 0f,
+                -0.5f,     0f,   0f,   1.5f,     1f,   0f,   0f,
+                 0.5f,     0f,   0f,   1.5f,     1f,   0f,   0f,
                 // Mallets : Mazo
-                0.f, -0.25f, 0f, 0f, 1f,
-                0.f, 0.25f, 1f, 0f, 0f
+                  0.f,  -0.4f,   0f,  1.25f,     0f,   0f,   1f,
+                  0.f,   0.4f,   0f,  1.75f,     1f,   0f,   0f
         };
         vertexData = ByteBuffer
                 .allocateDirect(tableVerticesWithTriangles.length * BYTES_PER_FLOAT)
@@ -89,17 +94,29 @@ public class OpenGLRendererPrincipal implements Renderer {
         vertexData.position(POSITION_COMPONENT_COUNT);
         glVertexAttribPointer(aColorLocation, COLOR_COMPONENT_COUNT, GL_FLOAT, false, STRIDE, vertexData);
         glEnableVertexAttribArray(aColorLocation);
+        uMatrixLocation = glGetUniformLocation(program, U_MATRIX);
     }
 
     @Override
     public void onSurfaceChanged(GL10 glUnused, int width, int height) {
 // Set the OpenGL viewport to fill the entire surface.
         GLES20.glViewport(0, 0, width, height);
+        final float aspectRatio = width > height ?
+                (float)width / (float)height:
+                (float)height / (float)width;
+        if(width>height){
+            //LandScape
+            orthoM(projectionMatrix, 0, -aspectRatio, aspectRatio, -1f, 1f, -1f, 1f);
+        }else{
+            //Portrait or Square
+            orthoM(projectionMatrix, 0, -1f, 1f, -aspectRatio, aspectRatio, -1f, 1f);
+        }
     }
 
     @Override
     public void onDrawFrame(GL10 gl10) {
         GLES20.glClear(GL_COLOR_BUFFER_BIT);
+        glUniformMatrix4fv(uMatrixLocation, 1, false, projectionMatrix, 0);
         //glUniform4f(uColorLocation, 1.0f, 1.0f, 1.0f, 1.0f);
         glDrawArrays(GL_TRIANGLE_FAN, 0, 6);
         //glUniform4f(uColorLocation, 1.0f, 0.0f, 0.0f, 1.0f);
