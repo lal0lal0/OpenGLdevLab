@@ -17,7 +17,11 @@ import static android.opengl.GLES20.glUniform4f;
 import static android.opengl.GLES20.glUniformMatrix4fv;
 import static android.opengl.GLES20.glUseProgram;
 import static android.opengl.GLES20.glVertexAttribPointer;
+import static android.opengl.Matrix.multiplyMM;
 import static android.opengl.Matrix.orthoM;
+import static android.opengl.Matrix.rotateM;
+import static android.opengl.Matrix.setIdentityM;
+import static android.opengl.Matrix.translateM;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -33,6 +37,7 @@ import java.nio.FloatBuffer;
 
 public class OpenGLRendererPrincipal implements Renderer {
     private final Context context;
+    private final float[] modelMatrix = new float[16];
     private static final int POSITION_COMPONENT_COUNT = 4;
     private static final int BYTES_PER_FLOAT = 4;
     private static final String A_COLOR = "a_Color";
@@ -101,16 +106,13 @@ public class OpenGLRendererPrincipal implements Renderer {
     public void onSurfaceChanged(GL10 glUnused, int width, int height) {
 // Set the OpenGL viewport to fill the entire surface.
         GLES20.glViewport(0, 0, width, height);
-        final float aspectRatio = width > height ?
-                (float)width / (float)height:
-                (float)height / (float)width;
-        if(width>height){
-            //LandScape
-            orthoM(projectionMatrix, 0, -aspectRatio, aspectRatio, -1f, 1f, -1f, 1f);
-        }else{
-            //Portrait or Square
-            orthoM(projectionMatrix, 0, -1f, 1f, -aspectRatio, aspectRatio, -1f, 1f);
-        }
+        MatrixHelper.perspectiveM(projectionMatrix, 45, (float) width / (float) height, 1f, 10f);
+        setIdentityM(modelMatrix, 0);
+        translateM(modelMatrix, 0, 0f, 0f, -2f);
+        rotateM(modelMatrix, 0, -60f, 1f, 0f, 0f );
+        final float[] temp = new float[16];
+        multiplyMM(temp, 0, projectionMatrix, 0, modelMatrix, 0);
+        System.arraycopy(temp, 0, projectionMatrix, 0, temp.length);
     }
 
     @Override
