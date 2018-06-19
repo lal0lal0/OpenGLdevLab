@@ -12,6 +12,7 @@ import static android.opengl.GLES20.glUniformMatrix4fv;
  */
 
 public class ColorShaderProgram extends ShaderProgram {
+
     //Uniform locations
     private final int uMatrixLocation;
     //Attribute Locations
@@ -27,13 +28,20 @@ public class ColorShaderProgram extends ShaderProgram {
         aPositionLocation = glGetAttribLocation(program, A_POSITION);
         aColorLocation = glGetAttribLocation(program, A_COLOR);
     }
+
+
+
     public void setUniforms(float[] matrix){
         //Pass the matrix into the shader program.
         glUniformMatrix4fv(uMatrixLocation, 1, false, matrix, 0);
     }
+
+
     public int getPositionAttributeLocation(){
         return aPositionLocation;
     }
+
+
     public int getColorAttributeLocation(){
         return aColorLocation;
     }

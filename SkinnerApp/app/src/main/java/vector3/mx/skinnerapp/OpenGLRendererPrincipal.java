@@ -50,12 +50,15 @@ public class OpenGLRendererPrincipal implements Renderer {
                 (float) height / (float) width;
         if (width > height) {
             //LandScape
-            orthoM(projectionMatrix, 0, -aspectRatio, aspectRatio, -1f, 1f, -1f, 1f);
+            orthoM(projectionMatrix, 0, -aspectRatio, aspectRatio,
+                    -1f, 1f, -1f, 1f);
         } else {
             //Portrait or Square
-            orthoM(projectionMatrix, 0, -1f, 1f, -aspectRatio, aspectRatio, -1f, 1f);
+            orthoM(projectionMatrix, 0, -1f, 1f,
+                    -aspectRatio, aspectRatio, -1f, 1f);
         }
-        MatrixHelper.perspectiveM(projectionMatrix, 45, (float) width / (float) height, 1f, 10f);
+        MatrixHelper.perspectiveM(projectionMatrix, 45,
+                (float) width / (float) height, 1f, 10f);
         setIdentityM(modelMatrix, 0);
         translateM(modelMatrix, 0, 0f, 0f, -2f);
         rotateM(modelMatrix, 0, -60f, 1f, 0f, 0f);
