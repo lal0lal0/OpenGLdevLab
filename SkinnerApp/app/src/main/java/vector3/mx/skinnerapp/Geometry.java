@@ -18,9 +18,24 @@ public class Geometry {
             this.z = z;
         }
 
-        //Mover en vertical
+        //Mover en vertical its a helper function
         public Point translateY(float distance) {
             return new Point(x, y + distance, z);
+        }
+
+        //Mover en vertical its a helper function
+        public Point translateX(float distance) {
+            return new Point(x + distance, y , z);
+        }
+    }
+
+    public static class Triangulo{
+        //el centro del circulo inicia con una instancia de Punto Point
+        // el cual tiene las 3 coordenadas x,y z
+        public final Point center;
+
+        public Triangulo(Point center){
+            this.center = center;
         }
     }
 
@@ -67,4 +82,16 @@ public class Geometry {
 
 
     }
+
+
+
+    public static class Linea{
+        public final Point center;
+        public Linea(Point center){
+            this.center = center;
+        }
+    }
+
+
+
 }

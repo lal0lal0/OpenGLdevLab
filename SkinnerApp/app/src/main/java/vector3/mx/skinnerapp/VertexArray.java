@@ -13,14 +13,20 @@ import static android.opengl.GLES20.glVertexAttribPointer;
  */
 
 public class VertexArray {
+
+    // utiliza un buffer de tipo float porque las coordenadas estan en float
     private final FloatBuffer floatBuffer;
 
+    // constructor recibe un arreglo lineal, reserva el espacio en memoria que requiera
+    // lo convierte al tipo nativo del sistema y guarda referencia al vertexData
     public VertexArray(float[] vertexData) {
         floatBuffer = ByteBuffer.allocateDirect(vertexData.length * Constants.BYTES_PER_FLOAT)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer()
                 .put(vertexData);
     }
+
+
     public void setVertexAttribPointer(int dataOffset, int attributeLocation,
                                        int componentCount, int stride){
         floatBuffer.position(dataOffset);
@@ -29,4 +35,6 @@ public class VertexArray {
         glEnableVertexAttribArray(attributeLocation);
         floatBuffer.position(0);
     }
+
+
 }

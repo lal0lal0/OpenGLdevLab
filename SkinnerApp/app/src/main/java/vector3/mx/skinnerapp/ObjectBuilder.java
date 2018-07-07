@@ -8,6 +8,7 @@ import vector3.mx.skinnerapp.Geometry.Circle;
 import vector3.mx.skinnerapp.Geometry.Cylinder;
 import vector3.mx.skinnerapp.Geometry.Point;
 
+import static android.opengl.GLES20.GL_LINES;
 import static android.opengl.GLES20.GL_TRIANGLE_FAN;
 import static android.opengl.GLES20.GL_TRIANGLE_STRIP;
 import static android.opengl.GLES20.glDrawArrays;
@@ -39,9 +40,17 @@ public class ObjectBuilder {
 
 
     private static int sizeOfOpenCylinderInVertices(int numPoints) {
+        // se multiplica x 2 x porque son 2 vertices requeridos por cada punto
         return (numPoints + 1) * 2;
     }
 
+    private static int sizeOfSimpleTriangleInVertices(){
+        return (3);
+    }
+
+    private static int sizeOfLineInVertices(){
+        return (3);
+    }
 
     static GeneratedData createPuck(Cylinder puck, int numPoints) {
         int size = sizeOfCircleInVertices(numPoints)
@@ -53,13 +62,30 @@ public class ObjectBuilder {
         builder.appendCircle(puckTop, numPoints);
         builder.appendOpenCylinder(puck, numPoints);
 
-        //return builder.build();
-        return null;
+        return builder.build();
+    }
+
+    static GeneratedData createTrianguloBasico(Point center, int numPoints) {
+        int size = sizeOfSimpleTriangleInVertices();
+        ObjectBuilder builder = new ObjectBuilder(size);
+        Geometry.Triangulo triangulo  = new Geometry.Triangulo(center);
+
+        builder.appendTrianguloBasico(triangulo, numPoints);
+        return builder.build();
+    }
+
+    static GeneratedData createLinea(Point center, int numPoints) {
+        int size = sizeOfLineInVertices();
+        ObjectBuilder builder = new ObjectBuilder(size);
+        Geometry.Linea linea  = new Geometry.Linea(center);
+
+        builder.appendLinea(linea, numPoints);
+        return builder.build();
     }
 
 
 
-    //Holder Class
+    //Holder Class  es un holder para el array vertexData y la lista de comandos de dibujo
     static class GeneratedData {
 
         final float[] vertexData;
@@ -78,6 +104,8 @@ public class ObjectBuilder {
     }
 
 
+    // createMallet es un metodo estatico para hacer el objeto
+    //  y tener la referencia al array vertexData y su drawList
     static GeneratedData createMallet(
             Point center, float radius, float height, int numPoints){
 
@@ -118,7 +146,45 @@ public class ObjectBuilder {
         builder.appendCircle( handleCircle, numPoints);
         builder.appendOpenCylinder( handleCylinder, numPoints);
 
-        return null;
+        return builder.build();
+    }
+
+    private GeneratedData build(){
+        return new GeneratedData(vertexData, drawList);
+    }
+
+    public void appendTrianguloBasico(Geometry.Triangulo triangulo, int numPoints){
+        final int startVertex = offset / FLOATS_PER_VERTEX;
+        final int numVertices = sizeOfSimpleTriangleInVertices();
+
+        vertexData[offset++] = triangulo.center.x;
+        vertexData[offset++] = triangulo.center.y;
+        vertexData[offset++] = triangulo.center.z;
+
+
+        drawList.add(new DrawCommand() {
+            @Override
+            public void draw() {
+                glDrawArrays(GL_LINES, startVertex, numVertices);
+            }
+        });
+    }
+
+    public void appendLinea(Geometry.Linea linea, int numPoints){
+        final int startVertex = offset / FLOATS_PER_VERTEX;
+        final int numVertices = sizeOfSimpleTriangleInVertices();
+
+        vertexData[offset++] = linea.center.x;
+        vertexData[offset++] = linea.center.y;
+        vertexData[offset++] = linea.center.z;
+
+
+        drawList.add(new DrawCommand() {
+            @Override
+            public void draw() {
+                glDrawArrays(GL_LINES, startVertex, numVertices);
+            }
+        });
     }
 
 
@@ -131,6 +197,8 @@ public class ObjectBuilder {
         //Center point of fan
         //Defino el vertice del centro del circulo
         //utilizando tres posiciones del arreglo para x y z
+        // pasando las coordenadas del circulo para tener su referencia
+        // en el vertexData
 
         vertexData[offset++] = circle.center.x;
         vertexData[offset++] = circle.center.y;
@@ -145,10 +213,10 @@ public class ObjectBuilder {
 
         for (int i = 0; i <= numPoints; i++) {
 
-            //Calcular y convertir el angulo en Radianes
+            // Calcular y convertir el angulo en Radianes
             // para ello, el indice actual i que incrementa en ++
             // se divide por la cantidad todal de puntos o vertices
-            //  luego se mulitplica por el doble de pi
+            // luego se mulitplica por el doble de pi
             float angleInRadians = ((float) i / (float) numPoints) *
                     ((float) Math.PI * 2f);
 
@@ -176,6 +244,7 @@ public class ObjectBuilder {
     }
 
 
+    //Interfaz drawCommand
     static interface DrawCommand {
 
 
@@ -212,13 +281,13 @@ public class ObjectBuilder {
                     ((float) Math.sin(angleInRadians));
 
 
-            //Top cylinder vertice
+            //Top cylinder vertice este es un vertice
             vertexData[offset++] = xPosition;
             vertexData[offset++] = yStart;
             vertexData[offset++] = zPosition;
 
 
-            //Bottom cyliinder vertice
+            //Bottom cylinder vertice, segundo vertice
             vertexData[offset++] = xPosition;
             vertexData[offset++] = yEnd;
             vertexData[offset++] = zPosition;

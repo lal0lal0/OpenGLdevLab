@@ -23,6 +23,8 @@ public class Puck {
         this.radius = radius;
         this.height = height;
 
+
+
         vertexArray = new VertexArray(generatedData.vertexData);
         drawList = generatedData.drawList;
     }
