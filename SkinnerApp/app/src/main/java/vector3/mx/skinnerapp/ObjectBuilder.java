@@ -32,7 +32,6 @@ public class ObjectBuilder {
         vertexData = new float[sizeInVertices * FLOATS_PER_VERTEX];
     }
 
-
     //Calculate the size of a Cylinder Top
     private static int sizeOfCircleInVertices(int numPoints) {
         return 1 + (numPoints + 1);
@@ -49,7 +48,7 @@ public class ObjectBuilder {
     }
 
     private static int sizeOfLineInVertices(){
-        return (3);
+        return (2);
     }
 
     static GeneratedData createPuck(Cylinder puck, int numPoints) {
@@ -74,12 +73,11 @@ public class ObjectBuilder {
         return builder.build();
     }
 
-    static GeneratedData createLinea(Point center, int numPoints) {
+    static GeneratedData createLinea() {
         int size = sizeOfLineInVertices();
         ObjectBuilder builder = new ObjectBuilder(size);
-        Geometry.Linea linea  = new Geometry.Linea(center);
-
-        builder.appendLinea(linea, numPoints);
+        //Geometry.Linea linea  = new Geometry.Linea();
+        builder.appendLinea();
         return builder.build();
     }
 
@@ -91,7 +89,7 @@ public class ObjectBuilder {
         final float[] vertexData;
         final List<DrawCommand> drawList;
 
-        GeneratedData(float[] vertexData, List<DrawCommand> drawList) {
+        GeneratedData(float[] vertexData , List<DrawCommand> drawList) {
             this.vertexData = vertexData;
             this.drawList = drawList;
         }
@@ -170,13 +168,13 @@ public class ObjectBuilder {
         });
     }
 
-    public void appendLinea(Geometry.Linea linea, int numPoints){
+    public void appendLinea(){
         final int startVertex = offset / FLOATS_PER_VERTEX;
-        final int numVertices = sizeOfSimpleTriangleInVertices();
+        final int numVertices = sizeOfLineInVertices();
 
-        vertexData[offset++] = linea.center.x;
-        vertexData[offset++] = linea.center.y;
-        vertexData[offset++] = linea.center.z;
+        vertexData[offset++] = 0.0f;
+        vertexData[offset++] = 0.6f;
+        vertexData[offset++] = 0.0f;
 
 
         drawList.add(new DrawCommand() {

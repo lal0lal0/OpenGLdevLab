@@ -2,19 +2,13 @@ package vector3.mx.skinnerapp; /**
  * Created by miMiau on 21/01/2018.
  */
 
-import static android.opengl.GLES20.GL_COLOR_BUFFER_BIT;
-import static android.opengl.GLES20.glClearColor;
-import static android.opengl.Matrix.multiplyMM;
-import static android.opengl.Matrix.rotateM;
-import static android.opengl.Matrix.setIdentityM;
-import static android.opengl.Matrix.setLookAtM;
-import static android.opengl.Matrix.translateM;
+import static android.opengl.GLES20.*;
+import android.opengl.GLES20;
+import static android.opengl.Matrix.*;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 import android.content.Context;
-import android.opengl.GLES20;
 import android.opengl.GLSurfaceView.Renderer;
-
 
 
 
@@ -29,6 +23,7 @@ public class OpenGLRendererPrincipal implements Renderer {
     private final float[] modelMatrix = new float[16];
 
     private Table table;
+    private TableColor tableColor;
     private TrianguloBasico trianguloBasico;
     private Mallet mallet;
     private Puck puck;
@@ -49,11 +44,10 @@ public class OpenGLRendererPrincipal implements Renderer {
         glClearColor(0f, 0f, 0f, 0f);
 
         //table = new Table();
+        tableColor =  new TableColor();
         //trianguloBasico = new TrianguloBasico(0.1f, 0.1f, 0.0f);
         //trianguloBasico_1 = new TrianguloBasico(0.3f, 0.3f, 0.0f);
-        linea = new Linea(0.1f,0.1f,0.0f);
-
-
+        linea = new Linea();
         //mallet = new Mallet(0.08f, 0.15f, 32);
         //puck = new Puck(006f, 0.02f, 32);
         textureProgram = new TextureShaderProgram(context);
@@ -100,21 +94,21 @@ public class OpenGLRendererPrincipal implements Renderer {
     public void onDrawFrame(GL10 gl10) {
         //Clear the rendering surface
         GLES20.glClear(GL_COLOR_BUFFER_BIT);
-
         multiplyMM(viewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
-
         //positionTableInScene();
-
         positionObjectInScene(0.0f, 0.0f, 0.0f );
         colorProgram.useProgram();
-        colorProgram.setUniforms(modelViewProjectionMatrix, 1f, 0f, 0.0f);
-        linea.bindData(colorProgram);
-        linea.draw();
+        colorProgram.setUniforms(modelViewProjectionMatrix);
+        //linea.bindData(colorProgram);
+        //linea.draw();
+
+        tableColor.bindData(colorProgram);
+        tableColor.draw();
 
 
-        positionObjectWithRotateInScene(0.2f, 0.2f, 0.0f, -180f );
-        colorProgram.setUniforms(modelViewProjectionMatrix, 0f, 0f, 1f);
-        linea.draw();
+        //positionObjectWithRotateInScene(0.2f, 0.2f, 0.0f, -180f );
+        //colorProgram.setUniforms(modelViewProjectionMatrix, 0f, 0f, 1f);
+        //linea.draw();
 
         //positionObjectInScene(-0.2f, 0.2f, 0.0f );
         //colorProgram.useProgram();
@@ -163,11 +157,6 @@ public class OpenGLRendererPrincipal implements Renderer {
         //colorProgram.setUniforms(modelViewProjectionMatrix, 0.8f, 0.8f, 1f);
         //puck.bindData(colorProgram);
         //puck.draw();
-
-
-
-
-
     }
 
     private void positionTableInScene(){

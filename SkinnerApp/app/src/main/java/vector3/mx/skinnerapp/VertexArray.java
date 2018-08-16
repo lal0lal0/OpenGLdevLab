@@ -33,7 +33,7 @@ public class VertexArray {
         glVertexAttribPointer(attributeLocation, componentCount,
                 GL_FLOAT, false, stride, floatBuffer);
         glEnableVertexAttribArray(attributeLocation);
-        floatBuffer.position(0);
+
     }
 
 

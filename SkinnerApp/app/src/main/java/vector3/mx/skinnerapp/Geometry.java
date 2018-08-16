@@ -86,9 +86,9 @@ public class Geometry {
 
 
     public static class Linea{
-        public final Point center;
-        public Linea(Point center){
-            this.center = center;
+
+        public Linea(){
+
         }
     }
 

@@ -8,9 +8,8 @@ public class Linea {
     private final VertexArray vertexArray;
     private final List<ObjectBuilder.DrawCommand> drawList;
 
-    public Linea(float x, float y, float z){
-        ObjectBuilder.GeneratedData generatedData = ObjectBuilder.createLinea(
-                new Geometry.Point(x, y, z), 3);
+    public Linea(){
+        ObjectBuilder.GeneratedData generatedData = ObjectBuilder.createLinea();
         vertexArray = new VertexArray(generatedData.vertexData);
         drawList = generatedData.drawList;
     }

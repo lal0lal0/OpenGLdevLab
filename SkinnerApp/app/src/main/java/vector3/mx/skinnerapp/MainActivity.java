@@ -7,7 +7,6 @@ import android.content.pm.ConfigurationInfo;
 import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
@@ -42,5 +41,21 @@ public class MainActivity extends Activity {
             return;
         }
 
+    }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+        if(renderSet){
+            glSurfaceView.onPause();
+        }
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        if(renderSet){
+            glSurfaceView.onResume();
+        }
     }
 }
