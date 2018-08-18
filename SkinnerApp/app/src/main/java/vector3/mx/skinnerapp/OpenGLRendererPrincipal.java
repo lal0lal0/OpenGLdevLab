@@ -13,23 +13,19 @@ import android.opengl.GLSurfaceView.Renderer;
 
 
 public class OpenGLRendererPrincipal implements Renderer {
+
     private final Context context;
 
     private final float[] viewMatrix = new float[16];
     private final float[] viewProjectionMatrix = new float[16];
     private final float[] modelViewProjectionMatrix = new float[16];
-
     private final float[] projectionMatrix = new float[16];
     private final float[] modelMatrix = new float[16];
 
     private Table table;
-    private TableColor tableColor;
-    private TrianguloBasico trianguloBasico;
     private Mallet mallet;
     private Puck puck;
-    private Linea linea;
-
-
+    
     private TextureShaderProgram textureProgram;
     private ColorShaderProgram colorProgram;
     private int texture;
@@ -42,14 +38,9 @@ public class OpenGLRendererPrincipal implements Renderer {
     @Override
     public void onSurfaceCreated(GL10 glUnused, EGLConfig config) {
         glClearColor(0f, 0f, 0f, 0f);
-
-        //table = new Table();
-        tableColor =  new TableColor();
-        //trianguloBasico = new TrianguloBasico(0.1f, 0.1f, 0.0f);
-        //trianguloBasico_1 = new TrianguloBasico(0.3f, 0.3f, 0.0f);
-        linea = new Linea();
-        //mallet = new Mallet(0.08f, 0.15f, 32);
-        //puck = new Puck(006f, 0.02f, 32);
+        table = new Table();
+        mallet = new Mallet(0.08f, 0.15f, 3 * 9);
+        puck = new Puck(006f, 0.02f, 32);
         textureProgram = new TextureShaderProgram(context);
         colorProgram = new ColorShaderProgram(context);
         texture = TextureHelper.loadTexture(context, R.drawable.air_hockey_surface);
@@ -96,52 +87,19 @@ public class OpenGLRendererPrincipal implements Renderer {
         GLES20.glClear(GL_COLOR_BUFFER_BIT);
         multiplyMM(viewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
         //positionTableInScene();
-        positionObjectInScene(0.0f, 0.0f, 0.0f );
-        colorProgram.useProgram();
-        colorProgram.setUniforms(modelViewProjectionMatrix);
-        //linea.bindData(colorProgram);
-        //linea.draw();
-
-        tableColor.bindData(colorProgram);
-        tableColor.draw();
-
-
-        //positionObjectWithRotateInScene(0.2f, 0.2f, 0.0f, -180f );
-        //colorProgram.setUniforms(modelViewProjectionMatrix, 0f, 0f, 1f);
-        //linea.draw();
-
-        //positionObjectInScene(-0.2f, 0.2f, 0.0f );
-        //colorProgram.useProgram();
-        //colorProgram.setUniforms(modelViewProjectionMatrix, 0f, 0f, 1f);
-        //linea_1.bindData(colorProgram);
-        //linea_1.draw();
-
-        //positionObjectInScene(0.2f, 0.2f, 0.0f );
-        //colorProgram.useProgram();
-        //colorProgram.setUniforms(modelViewProjectionMatrix, 1f, 0f, 0.0f);
-        //linea.bindData(colorProgram);
-        //linea.draw();
-
-        //trianguloBasico.bindData(colorProgram);
-        //trianguloBasico.draw();
-
-        //positionObjectInScene(0.2f, 0.2f, 0.0f );
-        //colorProgram.useProgram();
-        //colorProgram.setUniforms(modelViewProjectionMatrix, 1f, 0f, 0f);
-        //trianguloBasico_1.bindData(colorProgram);
-        //trianguloBasico_1.draw();
-        //textureProgram.useProgram();
-        //textureProgram.setUniforms(modelViewProjectionMatrix, texture);
+        //colorProgram.setUniforms(modelViewProjectionMatrix);
+        textureProgram.useProgram();
+        textureProgram.setUniforms(modelViewProjectionMatrix, texture);
         //table.bindData(textureProgram);
         //table.draw();
 
         //draw the mallets
 
-        //positionObjectInScene(0f, mallet.height / 2f, -0.4f );
-        //colorProgram.useProgram();
-        //colorProgram.setUniforms(modelViewProjectionMatrix, 1f, 0f, 0f);
-        //mallet.bindData(colorProgram);
-        //mallet.draw();
+        positionObjectInScene(0f, 0f, 0f );
+        colorProgram.useProgram();
+        colorProgram.setUniforms(modelViewProjectionMatrix);
+        mallet.bindData(colorProgram);
+        mallet.draw();
 
         //positionObjectInScene(0f, mallet.height / 2f, 0.4f);
         //colorProgram.setUniforms(modelViewProjectionMatrix, 0f, 0f, 1f);

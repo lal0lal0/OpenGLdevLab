@@ -22,7 +22,7 @@ import static android.opengl.GLES20.glDrawArrays;
 public class ObjectBuilder {
 
 
-    private static final int FLOATS_PER_VERTEX = 3;
+    private static final int FLOATS_PER_VERTEX = 6;
     private final float[] vertexData;
     private final List<DrawCommand> drawList = new ArrayList<DrawCommand>();
     private int offset = 0;
@@ -58,7 +58,7 @@ public class ObjectBuilder {
         Circle puckTop = new Circle(
                 puck.center.translateY(puck.height / 2f),
                 puck.radius);
-        builder.appendCircle(puckTop, numPoints);
+       // builder.appendCircle(puckTop, numPoints);
         builder.appendOpenCylinder(puck, numPoints);
 
         return builder.build();
@@ -108,8 +108,8 @@ public class ObjectBuilder {
             Point center, float radius, float height, int numPoints){
 
         // Calcular el tamanio requerido para almacenar los objetos a dibujar
-        int size = sizeOfCircleInVertices(numPoints) * 2 +
-                sizeOfOpenCylinderInVertices(numPoints) * 2;
+        int size = sizeOfCircleInVertices(numPoints);
+                //sizeOfOpenCylinderInVertices(numPoints) * 2;
 
         ObjectBuilder builder = new ObjectBuilder(size);
 
@@ -121,28 +121,28 @@ public class ObjectBuilder {
         //  usando el vertice denominado: center , que hereda de Point y
         //  usamos su funcion translacion en eje Y, con la cantidad negativa
         //  equivalente a la altura.
-        Circle baseCircle = new Circle( center.translateY( -baseHeight ), radius);
+        Circle baseCircle = new Circle(new Point(0.0f, 0.0f, 0.0f), 0.5f );
 
         // Ahora creamos un cilindro, se requiere el radio, un vertice central
         // y la altura. el centro de este cilindro es en referencia a
         // el primer circulo , en este metodo la altura se divide entre 2
         // para que el vertice central del cilindro quede ubicado hacia abajo.
-        Cylinder baseCylinder = new Cylinder(
-                baseCircle.center.translateY(-baseHeight / 2f), radius, baseHeight);
+        //Cylinder baseCylinder = new Cylinder(
+                //baseCircle.center.translateY(-baseHeight / 2f), radius, baseHeight);
 
-        builder.appendCircle(baseCircle, numPoints);
-        builder.appendOpenCylinder(baseCylinder, numPoints);
+        builder.appendCircle(numPoints);
+        //builder.appendOpenCylinder(baseCylinder, numPoints);
 
         //Generate the handle
         float handleHeight = height * 0.75f;
         float handleRadius = radius / 3f;
 
-        Circle handleCircle = new Circle(center.translateY( height * 0.75f), handleRadius);
-        Cylinder handleCylinder = new Cylinder(
-                handleCircle.center.translateY( -handleHeight / 2f ), handleRadius, handleHeight);
+        //Circle handleCircle = new Circle(center.translateY( height * 0.75f), handleRadius);
+        //Cylinder handleCylinder = new Cylinder(
+                //handleCircle.center.translateY( -handleHeight / 2f ), handleRadius, handleHeight);
 
-        builder.appendCircle( handleCircle, numPoints);
-        builder.appendOpenCylinder( handleCylinder, numPoints);
+        //builder.appendCircle( handleCircle, numPoints);
+        //builder.appendOpenCylinder( handleCylinder, numPoints);
 
         return builder.build();
     }
@@ -187,7 +187,7 @@ public class ObjectBuilder {
 
 
 
-    public void appendCircle(Circle circle, int numPoints) {
+    public void appendCircle( int numPoints) {
 
         final int startVertex = offset / FLOATS_PER_VERTEX;
         final int numVertices = sizeOfCircleInVertices(numPoints);
@@ -198,9 +198,13 @@ public class ObjectBuilder {
         // pasando las coordenadas del circulo para tener su referencia
         // en el vertexData
 
-        vertexData[offset++] = circle.center.x;
-        vertexData[offset++] = circle.center.y;
-        vertexData[offset++] = circle.center.z;
+        vertexData[offset++] = 0.0f;
+        vertexData[offset++] = 0.0f;
+        vertexData[offset++] = 0.0f;
+        vertexData[offset++] = 0.1f;
+        vertexData[offset++] = 0.0f;
+        vertexData[offset++] = 0.0f;
+        //vertexData[offset++] = 1f;
 
         //Por eso el punto del centro se define fuera del FOR
 
@@ -209,7 +213,7 @@ public class ObjectBuilder {
         // we want to generate the point at the
         // starting  angle twice  to complete the fan.
 
-        for (int i = 0; i <= numPoints; i++) {
+        for (int i = 0; i < numPoints; i++) {
 
             // Calcular y convertir el angulo en Radianes
             // para ello, el indice actual i que incrementa en ++
@@ -218,13 +222,15 @@ public class ObjectBuilder {
             float angleInRadians = ((float) i / (float) numPoints) *
                     ((float) Math.PI * 2f);
 
-            vertexData[offset++] = (float) (circle.center.x +
-                    circle.radius * Math.cos(angleInRadians));
+            vertexData[offset++] = (float) (0.5f * Math.cos(angleInRadians));
 
-            vertexData[offset++] = circle.center.y;
+            vertexData[offset++] = 0f;
 
-            vertexData[offset++] = (float) (circle.center.z +
-                    circle.radius * Math.sin(angleInRadians));
+            vertexData[offset++] = (float)(0.5f * Math.sin(angleInRadians));
+
+            vertexData[offset++] = 0.2f;
+            vertexData[offset++] = 0.0f;
+            vertexData[offset++] = 0f;
             //correccion : FloatMath() esta deprecated,
             // x lo que se usa Math.cos() con casting a float
 
