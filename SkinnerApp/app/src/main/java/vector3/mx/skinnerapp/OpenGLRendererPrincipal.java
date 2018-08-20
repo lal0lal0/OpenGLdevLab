@@ -13,19 +13,25 @@ import android.opengl.GLSurfaceView.Renderer;
 
 
 public class OpenGLRendererPrincipal implements Renderer {
-
     private final Context context;
 
     private final float[] viewMatrix = new float[16];
     private final float[] viewProjectionMatrix = new float[16];
     private final float[] modelViewProjectionMatrix = new float[16];
+
     private final float[] projectionMatrix = new float[16];
     private final float[] modelMatrix = new float[16];
 
     private Table table;
+    private TableColor tableColor;
+    private TrianguloBasico trianguloBasico;
     private Mallet mallet;
     private Puck puck;
-    
+    private Linea linea;
+    private CirculoBasico circuloBasico;
+
+
+
     private TextureShaderProgram textureProgram;
     private ColorShaderProgram colorProgram;
     private int texture;
@@ -38,9 +44,15 @@ public class OpenGLRendererPrincipal implements Renderer {
     @Override
     public void onSurfaceCreated(GL10 glUnused, EGLConfig config) {
         glClearColor(0f, 0f, 0f, 0f);
-        table = new Table();
-        mallet = new Mallet(0.08f, 0.15f, 3 * 9);
-        puck = new Puck(006f, 0.02f, 32);
+
+        //table = new Table();
+        //tableColor =  new TableColor();
+        //trianguloBasico = new TrianguloBasico(0.1f, 0.1f, 0.0f);
+        //trianguloBasico_1 = new TrianguloBasico(0.3f, 0.3f, 0.0f);
+        //linea = new Linea();
+        //mallet = new Mallet(0.08f, 0.15f, 32);
+        //puck = new Puck(0.6f, 0.4f, 3);
+        circuloBasico = new CirculoBasico(0.5f, 60);
         textureProgram = new TextureShaderProgram(context);
         colorProgram = new ColorShaderProgram(context);
         texture = TextureHelper.loadTexture(context, R.drawable.air_hockey_surface);
@@ -56,29 +68,6 @@ public class OpenGLRendererPrincipal implements Renderer {
 
         setLookAtM(viewMatrix, 0, 0f, 1.2f, 2.2f,
                 0f, 0f, 0f, 0f, 1f, 0f);
-
-        /*
-        final float aspectRatio = width > height ?
-                (float) width / (float) height :
-                (float) height / (float) width;
-        if (width > height) {
-            //LandScape
-            orthoM(projectionMatrix, 0, -aspectRatio, aspectRatio,
-                    -1f, 1f, -1f, 1f);
-        } else {
-            //Portrait or Square
-            orthoM(projectionMatrix, 0, -1f, 1f,
-                    -aspectRatio, aspectRatio, -1f, 1f);
-        }
-        MatrixHelper.perspectiveM(projectionMatrix, 45,
-                (float) width / (float) height, 1f, 10f);
-        setIdentityM(modelMatrix, 0);
-        translateM(modelMatrix, 0, 0f, 0f, -2f);
-        rotateM(modelMatrix, 0, -60f, 1f, 0f, 0f);
-        final float[] temp = new float[16];
-        multiplyMM(temp, 0, projectionMatrix, 0, modelMatrix, 0);
-        System.arraycopy(temp, 0, projectionMatrix, 0, temp.length);
-        */
     }
 
     @Override
@@ -87,34 +76,12 @@ public class OpenGLRendererPrincipal implements Renderer {
         GLES20.glClear(GL_COLOR_BUFFER_BIT);
         multiplyMM(viewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
         //positionTableInScene();
-        //colorProgram.setUniforms(modelViewProjectionMatrix);
-        textureProgram.useProgram();
-        textureProgram.setUniforms(modelViewProjectionMatrix, texture);
-        //table.bindData(textureProgram);
-        //table.draw();
-
-        //draw the mallets
-
-        positionObjectInScene(0f, 0f, 0f );
+        positionObjectInScene(0.0f, 0.0f, 0.0f );
         colorProgram.useProgram();
         colorProgram.setUniforms(modelViewProjectionMatrix);
-        mallet.bindData(colorProgram);
-        mallet.draw();
+        circuloBasico.bindData(colorProgram);
+        circuloBasico.draw();
 
-        //positionObjectInScene(0f, mallet.height / 2f, 0.4f);
-        //colorProgram.setUniforms(modelViewProjectionMatrix, 0f, 0f, 1f);
-        // note that we dont  have to define the object data twice  - we just
-        // draw the same mallet again but in different position and with a
-        // different color
-        //mallet.draw();
-
-        // draw the puck
-
-
-        //positionObjectInScene(0f, puck.height / 2f, 0f);
-        //colorProgram.setUniforms(modelViewProjectionMatrix, 0.8f, 0.8f, 1f);
-        //puck.bindData(colorProgram);
-        //puck.draw();
     }
 
     private void positionTableInScene(){

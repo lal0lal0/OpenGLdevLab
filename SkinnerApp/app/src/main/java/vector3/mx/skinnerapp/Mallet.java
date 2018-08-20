@@ -14,13 +14,19 @@ import vector3.mx.skinnerapp.ObjectBuilder.GeneratedData;
 public class Mallet {
 
     private static final int POSITION_COMPONENT_COUNT = 3;
-    private static final int COLOR_COMPONENT_COUNT = 3;
     public final float radius , height ;
     //public final float height;
     private final VertexArray vertexArray ;
     private final List<DrawCommand> drawList ;
+
+    /*
     private static final int STRIDE =
             (POSITION_COMPONENT_COUNT + COLOR_COMPONENT_COUNT) * Constants.BYTES_PER_FLOAT;
+    private static final float[] VERTEX_DATA = {
+            // X Y  R G B
+            0f, -0.4f, 0f, 0f, 1f,
+            0f,  0.4f, 1f, 0f, 0f };
+            */
 
 
     //Inicializa el vertexArray
@@ -42,11 +48,6 @@ public class Mallet {
         vertexArray.setVertexAttribPointer(0, colorProgram.getPositionAttributeLocation(),
                 POSITION_COMPONENT_COUNT, 0 );
 
-        vertexArray.setVertexAttribPointer(
-                POSITION_COMPONENT_COUNT,
-                colorProgram.getaColorAttributeLocation(),
-                COLOR_COMPONENT_COUNT,
-                STRIDE);
     }
 
 

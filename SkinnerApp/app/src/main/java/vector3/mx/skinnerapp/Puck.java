@@ -11,6 +11,9 @@ public class Puck {
 
 
     private static final int POSITION_COMPONENT_COUNT = 3;
+    private static final int COLOR_COMPONENT_COUNT = 3;
+    private static final int STRIDE = ( POSITION_COMPONENT_COUNT
+            + COLOR_COMPONENT_COUNT ) * Constants.BYTES_PER_FLOAT;
     public final float radius, height;
     private final VertexArray vertexArray;
     private final List<DrawCommand> drawList;
@@ -32,6 +35,11 @@ public class Puck {
     public void bindData( ColorShaderProgram colorProgram){
         vertexArray.setVertexAttribPointer(0, colorProgram.getPositionAttributeLocation(),
                 POSITION_COMPONENT_COUNT, 0);
+        vertexArray.setVertexAttribPointer(
+                POSITION_COMPONENT_COUNT,
+                colorProgram.getaColorAttributeLocation(),
+                COLOR_COMPONENT_COUNT,
+                STRIDE);
     }
 
     public void draw(){

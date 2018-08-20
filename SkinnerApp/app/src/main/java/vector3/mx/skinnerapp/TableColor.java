@@ -8,7 +8,6 @@ import static android.opengl.GLES20.glDrawArrays;
  */
 
 public class TableColor {
-
     private static final int POSITION_COMPONENT_COUNT = 2;
     private static final int COLOR_COMPONENT_COUNT = 3;
     private static final int STRIDE = ( POSITION_COMPONENT_COUNT
