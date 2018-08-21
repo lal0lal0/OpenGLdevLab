@@ -39,6 +39,9 @@ public class ObjectBuilder {
     private static int sizeOfCircleInVertices(int numPoints) {
         return 1 + (numPoints + 1);
     }
+    private static int sizeOfTriangleStripInVertices(int numPoints) {
+        return 1 + (numPoints + 1);
+    }
 
 
     private static int sizeOfOpenCylinderInVertices(int numPoints) {
@@ -54,10 +57,25 @@ public class ObjectBuilder {
         return (2);
     }
 
+    static GeneratedData createCilindro(Cylinder cilindro, int numPoints){
+        int size = sizeOfOpenCylinderInVertices(numPoints);
+        ObjectBuilder builder = new ObjectBuilder(size);
+        builder.appendOpenCylinder(cilindro, numPoints);
+        return builder.build();
+    }
+
     static GeneratedData createCirculo(Circle circulo, int numPoints){
         int size = sizeOfCircleInVertices(numPoints);
         ObjectBuilder builder = new ObjectBuilder(size);
         builder.appendCirculo(circulo, numPoints);
+        return builder.build();
+    }
+
+    static GeneratedData createTriangleCircleStrip(Circle circulo, int numPoints){
+        int size = sizeOfTriangleStripInVertices(numPoints);
+        ObjectBuilder builder = new ObjectBuilder(size);
+        //aqui el append
+
         return builder.build();
     }
 
@@ -243,9 +261,6 @@ public class ObjectBuilder {
     }
 
 
-
-
-
     public void appendCircle(Circle circle, int numPoints) {
 
         final int startVertex = offset / FLOATS_PER_VERTEX;
@@ -306,36 +321,25 @@ public class ObjectBuilder {
                 glDrawArrays(GL_TRIANGLE_FAN, startVertex, 36);
             }
         });
-
-
     }
 
 
     //Interfaz drawCommand
     static interface DrawCommand {
-
-
         void draw();
-
-
     }
 
 
     public void appendOpenCylinder(Cylinder cylinder, int numPoints) {
 
-
+        Random random = new Random();
         final int startVertex = (offset / FLOATS_PER_VERTEX);
-
         final int numVertices = sizeOfOpenCylinderInVertices(numPoints);
-
         final float yStart = cylinder.center.y - (cylinder.height / 2f);
-
         final float yEnd = cylinder.center.y + (cylinder.height / 2f);
 
-
         //Generate Triangle Strip
-
-        for (int i = 0; i < numPoints; i++) {
+        for (int i = 0; i <= numPoints; i++) {
 
             //Calcular el angulo en  radianes
             float angleInRadians = ((float) i / (float) numPoints) *
@@ -352,12 +356,18 @@ public class ObjectBuilder {
             vertexData[offset++] = xPosition;
             vertexData[offset++] = yStart;
             vertexData[offset++] = zPosition;
+            vertexData[offset++] = 0.1f + random.nextFloat();
+            vertexData[offset++] = 0.1f + random.nextFloat();
+            vertexData[offset++] = 0.0f + random.nextFloat();
 
 
             //Bottom cylinder vertice, segundo vertice
             vertexData[offset++] = xPosition;
             vertexData[offset++] = yEnd;
             vertexData[offset++] = zPosition;
+            vertexData[offset++] = 0.1f + random.nextFloat();
+            vertexData[offset++] = 0.1f + random.nextFloat();
+            vertexData[offset++] = 0.0f + random.nextFloat();
         }
 
 

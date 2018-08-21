@@ -22,15 +22,7 @@ public class OpenGLRendererPrincipal implements Renderer {
     private final float[] projectionMatrix = new float[16];
     private final float[] modelMatrix = new float[16];
 
-    private Table table;
-    private TableColor tableColor;
-    private TrianguloBasico trianguloBasico;
-    private Mallet mallet;
-    private Puck puck;
-    private Linea linea;
-    private CirculoBasico circuloBasico;
-
-
+    private CilindroBasico cilindroBasico;
 
     private TextureShaderProgram textureProgram;
     private ColorShaderProgram colorProgram;
@@ -44,15 +36,7 @@ public class OpenGLRendererPrincipal implements Renderer {
     @Override
     public void onSurfaceCreated(GL10 glUnused, EGLConfig config) {
         glClearColor(0f, 0f, 0f, 0f);
-
-        //table = new Table();
-        //tableColor =  new TableColor();
-        //trianguloBasico = new TrianguloBasico(0.1f, 0.1f, 0.0f);
-        //trianguloBasico_1 = new TrianguloBasico(0.3f, 0.3f, 0.0f);
-        //linea = new Linea();
-        //mallet = new Mallet(0.08f, 0.15f, 32);
-        //puck = new Puck(0.6f, 0.4f, 3);
-        circuloBasico = new CirculoBasico(0.5f, 60);
+        cilindroBasico = new CilindroBasico(0.4f, 0.4f, 40);
         textureProgram = new TextureShaderProgram(context);
         colorProgram = new ColorShaderProgram(context);
         texture = TextureHelper.loadTexture(context, R.drawable.air_hockey_surface);
@@ -79,8 +63,10 @@ public class OpenGLRendererPrincipal implements Renderer {
         positionObjectInScene(0.0f, 0.0f, 0.0f );
         colorProgram.useProgram();
         colorProgram.setUniforms(modelViewProjectionMatrix);
-        circuloBasico.bindData(colorProgram);
-        circuloBasico.draw();
+        cilindroBasico.bindData(colorProgram);
+        cilindroBasico.draw();
+        //circuloBasico.bindData(colorProgram);
+        //circuloBasico.draw();
 
     }
 
