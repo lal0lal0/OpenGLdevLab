@@ -22,7 +22,9 @@ public class OpenGLRendererPrincipal implements Renderer {
     private final float[] projectionMatrix = new float[16];
     private final float[] modelMatrix = new float[16];
 
-    private CilindroBasico cilindroBasico;
+    private Table tabla;
+    private Mallet mallet;
+    private Puck puck;
 
     private TextureShaderProgram textureProgram;
     private ColorShaderProgram colorProgram;
@@ -36,7 +38,9 @@ public class OpenGLRendererPrincipal implements Renderer {
     @Override
     public void onSurfaceCreated(GL10 glUnused, EGLConfig config) {
         glClearColor(0f, 0f, 0f, 0f);
-        cilindroBasico = new CilindroBasico(0.4f, 0.4f, 40);
+        puck = new Puck(0.035f, 0.015f, 30);
+        mallet = new Mallet(0.060f, 0.090f, 30);
+        tabla = new Table();
         textureProgram = new TextureShaderProgram(context);
         colorProgram = new ColorShaderProgram(context);
         texture = TextureHelper.loadTexture(context, R.drawable.air_hockey_surface);
@@ -46,28 +50,34 @@ public class OpenGLRendererPrincipal implements Renderer {
     public void onSurfaceChanged(GL10 glUnused, int width, int height) {
         // Set the OpenGL viewport to fill the entire surface.
         GLES20.glViewport(0, 0, width, height);
-
         MatrixHelper.perspectiveM(projectionMatrix, 45,
                 (float) width / (float) height, 1f, 10f);
-
         setLookAtM(viewMatrix, 0, 0f, 1.2f, 2.2f,
                 0f, 0f, 0f, 0f, 1f, 0f);
     }
 
     @Override
     public void onDrawFrame(GL10 gl10) {
-        //Clear the rendering surface
         GLES20.glClear(GL_COLOR_BUFFER_BIT);
         multiplyMM(viewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
-        //positionTableInScene();
+
+        positionTableInScene();
+        textureProgram.useProgram();
+        textureProgram.setUniforms(modelViewProjectionMatrix, texture);
+        tabla.bindData(textureProgram);
+        tabla.draw();
+
         positionObjectInScene(0.0f, 0.0f, 0.0f );
         colorProgram.useProgram();
         colorProgram.setUniforms(modelViewProjectionMatrix);
-        cilindroBasico.bindData(colorProgram);
-        cilindroBasico.draw();
-        //circuloBasico.bindData(colorProgram);
-        //circuloBasico.draw();
+        puck.bindData(colorProgram);
+        puck.draw();
 
+        positionObjectInScene(0.0f, -0.5f, 0.0f );
+        colorProgram.useProgram();
+        colorProgram.setUniforms(modelViewProjectionMatrix);
+        mallet.bindData(colorProgram);
+        mallet.draw();
     }
 
     private void positionTableInScene(){

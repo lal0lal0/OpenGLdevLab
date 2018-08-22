@@ -80,23 +80,15 @@ public class ObjectBuilder {
     }
 
 
-
-
     static GeneratedData createPuck(Cylinder puck, int numPoints) {
-        int size = 10;
-                //+ sizeOfOpenCylinderInVertices(numPoints);
+        int size = sizeOfCircleInVertices(numPoints) +
+                   + sizeOfOpenCylinderInVertices(numPoints);
         ObjectBuilder builder = new ObjectBuilder(size);
         Circle puckTop = new Circle(
                 puck.center.translateY(puck.height / 2f),
                 puck.radius);
-        builder.appendCircle(puckTop, size);
-
-        /*
-
+        builder.appendOpenCylinder(puck, numPoints);
         builder.appendCircle(puckTop, numPoints);
-        //builder.appendOpenCylinder(puck, numPoints);
-
-       */
         return builder.build();
     }
 
@@ -166,8 +158,9 @@ public class ObjectBuilder {
         Cylinder baseCylinder = new Cylinder(
                 baseCircle.center.translateY(-baseHeight / 2f), radius, baseHeight);
 
-        builder.appendCircle(baseCircle, numPoints);
         builder.appendOpenCylinder(baseCylinder, numPoints);
+        builder.appendCircle(baseCircle, numPoints);
+
 
         //Generate the handle
         float handleHeight = height * 0.75f;
@@ -177,8 +170,8 @@ public class ObjectBuilder {
         Cylinder handleCylinder = new Cylinder(
                 handleCircle.center.translateY( -handleHeight / 2f ), handleRadius, handleHeight);
 
-        builder.appendCircle( handleCircle, numPoints);
         builder.appendOpenCylinder( handleCylinder, numPoints);
+        builder.appendCircle( handleCircle, numPoints);
 
         return builder.build();
     }
@@ -264,23 +257,16 @@ public class ObjectBuilder {
     public void appendCircle(Circle circle, int numPoints) {
 
         final int startVertex = offset / FLOATS_PER_VERTEX;
-        final int numVertices = numPoints;
-
-        //Center point of fan
-        //Defino el vertice del centro del circulo
-        //utilizando tres posiciones del arreglo para x y z
-        // pasando las coordenadas del circulo para tener su referencia
-        // en el vertexData
+        final int numVertices = sizeOfCircleInVertices(numPoints);
 
 
-       /*
+        vertexData[offset++] = circle.center.x;
+        vertexData[offset++] = circle.center.y;
+        vertexData[offset++] = circle.center.z;
+        vertexData[offset++] = 0.50f;
         vertexData[offset++] = 0.0f;
         vertexData[offset++] = 0.0f;
-        vertexData[offset++] = 0.0f;
-        vertexData[offset++] = 0.1f;
-        vertexData[offset++] = 0.0f;
-        vertexData[offset++] = 0.0f;
-*/
+
 
         //Por eso el punto del centro se define fuera del FOR
 
@@ -289,13 +275,13 @@ public class ObjectBuilder {
         // we want to generate the point at the
         // starting  angle twice  to complete the fan.
 
-        for (int i = 0; i <= 36; i++) {
+        for (int i = 0; i <= numPoints; i++) {
 
             // Calcular y convertir el angulo en Radianes
             // para ello, el indice actual i que incrementa en ++
             // se divide por la cantidad todal de puntos o vertices
             // luego se mulitplica por el doble de pi
-            float angleInRadians = ((float) i / (float) 36) *
+            float angleInRadians = ((float) i / (float) numPoints) *
                     ((float) Math.PI * 2f);
 
             vertexData[offset++] = (float) (circle.center.x +
@@ -306,7 +292,7 @@ public class ObjectBuilder {
             vertexData[offset++] = (float) (circle.center.z +
                     circle.radius * Math.sin(angleInRadians));
 
-            vertexData[offset++] = 0.1f;
+            vertexData[offset++] = 0.90f;
             vertexData[offset++] = 0.0f;
             vertexData[offset++] = 0.0f;
             //correccion : FloatMath() esta deprecated,
@@ -318,7 +304,7 @@ public class ObjectBuilder {
         drawList.add(new DrawCommand() {
             @Override
             public void draw() {
-                glDrawArrays(GL_TRIANGLE_FAN, startVertex, 36);
+                glDrawArrays(GL_TRIANGLE_FAN, startVertex, numVertices);
             }
         });
     }
@@ -333,7 +319,7 @@ public class ObjectBuilder {
     public void appendOpenCylinder(Cylinder cylinder, int numPoints) {
 
         Random random = new Random();
-        final int startVertex = (offset / FLOATS_PER_VERTEX);
+        final int startVertex = offset / FLOATS_PER_VERTEX;
         final int numVertices = sizeOfOpenCylinderInVertices(numPoints);
         final float yStart = cylinder.center.y - (cylinder.height / 2f);
         final float yEnd = cylinder.center.y + (cylinder.height / 2f);
