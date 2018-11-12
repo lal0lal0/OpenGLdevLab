@@ -7,16 +7,53 @@ import android.content.pm.ConfigurationInfo;
 import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.MotionEvent;
+import android.view.View;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
     private GLSurfaceView glSurfaceView;
     private boolean renderSet = false;
+    final OpenGLRendererPrincipal renderer = new OpenGLRendererPrincipal(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         glSurfaceView = new GLSurfaceView(this);
+        //Agrgar funcionalidad TOUCH !!
+        glSurfaceView.setOnTouchListener(new View.OnTouchListener(){
+
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                if(motionEvent != null){
+                    // Convert touch coordinates into normalized device
+                    // coordinates, keeping in mind that Android's Y
+                    // coordinates are inverted.
+                    final float normalizedX =
+                            (motionEvent.getX() / (float) view.getWidth()) * 2  - 1;
+                    final float normalizedY =
+                            -((motionEvent.getY() / (float) view.getHeight()) * 2  - 1);
+                    if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
+                        glSurfaceView.queueEvent(new Runnable() {
+                            @Override
+                            public void run() {
+                                renderer.handleTouchPress(normalizedX, normalizedY);
+                            }
+                        });
+                    }else if(motionEvent.getAction() == MotionEvent.ACTION_MOVE){
+                        glSurfaceView.queueEvent(new Runnable() {
+                            @Override
+                            public void run() {
+                                renderer.handleTouchDrag(normalizedX, normalizedY);
+                            }
+                        });
+                    }
+                    return true;
+                }else{
+                    return false;
+                }
+            }
+        });
         setContentView(glSurfaceView);
         final ActivityManager activityManager =
                 (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
@@ -33,7 +70,7 @@ public class MainActivity extends Activity {
 // Request an OpenGL ES 2.0 compatible context.
             glSurfaceView.setEGLContextClientVersion(2);
 // Assign our renderer.
-            glSurfaceView.setRenderer(new OpenGLRendererPrincipal(this));
+            glSurfaceView.setRenderer(renderer);
             renderSet = true;
         } else {
             Toast.makeText(this, "This device does not support OpenGL ES 2.0.",
@@ -41,5 +78,21 @@ public class MainActivity extends Activity {
             return;
         }
 
+    }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+        if(renderSet){
+            glSurfaceView.onPause();
+        }
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        if(renderSet){
+            glSurfaceView.onResume();
+        }
     }
 }
