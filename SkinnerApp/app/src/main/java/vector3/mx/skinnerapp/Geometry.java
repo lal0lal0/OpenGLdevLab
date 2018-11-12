@@ -3,6 +3,7 @@ package vector3.mx.skinnerapp;
 
 
 import android.util.FloatMath;
+import android.util.Log;
 
 import java.util.Vector;
 
@@ -110,6 +111,7 @@ public class Geometry {
 
 
     public static class Ray{
+
         public final Point point;
         public final Vector vector;
 
@@ -120,6 +122,7 @@ public class Geometry {
     }
 
     public static class Vector{
+
         public final float x, y ,z;
 
         public Vector(float x, float y, float z){
@@ -168,6 +171,10 @@ public class Geometry {
     }
 
     public static boolean intersects(Sphere sphere, Ray ray){
+        Log.i("intersect: ",  " esfera center: x: " +
+        sphere.center.x + " , y: " + sphere.center.y + " , z: " + sphere.center.z +
+        " el rayo : ray point x : " + ray.point.x + " , ray point.y " + ray.point.y + ", " +
+        " ray point.z " + ray.point.z);
         return distanceBetween(sphere.center, ray) < sphere.radius;
     }
 

@@ -32,7 +32,7 @@ public class MainActivity extends Activity {
                     final float normalizedX =
                             (motionEvent.getX() / (float) view.getWidth()) * 2  - 1;
                     final float normalizedY =
-                            (motionEvent.getY() / (float) view.getHeight()) * 2  - 1;
+                            -((motionEvent.getY() / (float) view.getHeight()) * 2  - 1);
                     if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
                         glSurfaceView.queueEvent(new Runnable() {
                             @Override

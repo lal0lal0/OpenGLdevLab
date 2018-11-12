@@ -27,7 +27,7 @@ public class OpenGLRendererPrincipal implements Renderer {
     private final float[] modelMatrix = new float[16];
 
     private Table tabla;
-    private Mallet mallet;
+    private Mallet redMallet;
     private Puck puck;
 
     private TextureShaderProgram textureProgram;
@@ -46,9 +46,14 @@ public class OpenGLRendererPrincipal implements Renderer {
     @Override
     public void onSurfaceCreated(GL10 glUnused, EGLConfig config) {
         glClearColor(0f, 0f, 0f, 0f);
+
         puck = new Puck(0.035f, 0.015f, 30);
-        mallet = new Mallet(0.060f, 0.090f, 30);
-        redMalletPosition = new Point(0f, mallet.height / 2f, 0.4f);
+        //Point pos = new Point(0f, 0f, 0.2f);
+        redMallet = new Mallet(0.060f, 0.090f, 30);
+        //redMallet = new Mallet(0.060f, 0.090f, 30, pos);
+        //redMalletPosition = new Point(0f, redMallet.height / 2f, 0f);
+        redMalletPosition = new Point(0f, redMallet.height /2f , 0.4f);
+
         tabla = new Table();
         textureProgram = new TextureShaderProgram(context);
         colorProgram = new ColorShaderProgram(context);
@@ -83,11 +88,12 @@ public class OpenGLRendererPrincipal implements Renderer {
         puck.bindData(colorProgram);
         puck.draw();
 
-        positionObjectInScene(0.0f, -0.5f, 0.0f );
+        //positionObjectInScene(0.0f, -0.5f, 0.0f );
+        positionObjectInScene(redMalletPosition.x, redMalletPosition.y, redMalletPosition.z);
         colorProgram.useProgram();
         colorProgram.setUniforms(modelViewProjectionMatrix);
-        mallet.bindData(colorProgram);
-        mallet.draw();
+        redMallet.bindData(colorProgram);
+        redMallet.draw();
     }
 
     private void positionTableInScene(){
@@ -114,7 +120,7 @@ public class OpenGLRendererPrincipal implements Renderer {
     }
 
     public void handleTouchPress(float normalizedX, float normalizedY){
-        Log.i(TAG, "movimiento detectado TOUCH en X : " + normalizedX );
+        Log.i(TAG, " TouchPress -> movimiento en x = " + normalizedX + ", y = " + normalizedY);
         Ray ray = convertNormalized2DPointToRay(normalizedX, normalizedY);
         // Now test if this ray intersects with the mallet by creating
         //   a bounding sphere that wraps the mallet.
@@ -122,7 +128,7 @@ public class OpenGLRendererPrincipal implements Renderer {
                 redMalletPosition.x,
                 redMalletPosition.y,
                 redMalletPosition.z),
-                mallet.height / 2f);
+                redMallet.height / 2f);
         //if the ray intersects  ( if the user  touched  a part  of the screen that
         //intersects the mallets  bounding sphere ) ,then set mallet pressed  = true
         malletPressed = Geometry.intersects(malletBoundingSphere, ray);
@@ -160,8 +166,9 @@ public class OpenGLRendererPrincipal implements Renderer {
     }
 
     public void handleTouchDrag(float normalizedX, float normalizedY){
-        Log.i(TAG, "movimiento detectado DRAG en X : " + normalizedX );
+        Log.i(TAG, "movimiento  x = " + normalizedX + " , y = " + normalizedY);
         if(malletPressed){
+            Log.i(TAG, "mallet presionado :");
             Ray ray = convertNormalized2DPointToRay(normalizedX, normalizedY);
             //Define a plane representing our air hockey table.
             Plane plane = new Plane(new Point(0, 0, 0), new Vector(0, 1, 0));
@@ -170,7 +177,7 @@ public class OpenGLRendererPrincipal implements Renderer {
             representing our table. well move the mallet along this plane.
              */
             Point touchedPoint = Geometry.intersectionPoint(ray, plane);
-            redMalletPosition = new Point(touchedPoint.x, mallet.height / 2f, touchedPoint.z);
+            redMalletPosition = new Point(touchedPoint.x, redMallet.height / 2f, touchedPoint.z);
         }
     }
 }

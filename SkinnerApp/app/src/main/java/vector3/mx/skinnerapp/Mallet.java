@@ -21,11 +21,22 @@ public class Mallet {
     public final float height;
     private final VertexArray vertexArray ;
     private final List<DrawCommand> drawList ;
+    private Point pos;
 
     //Inicializa el vertexArray
     public Mallet(float radius, float height, int numPointsAroundMallet) {
         GeneratedData generatedData = ObjectBuilder.createMallet(
                 new Point(0f,0f,0f),radius, height, numPointsAroundMallet);
+        this.radius = radius;
+        this.height = height;
+        vertexArray = new VertexArray(generatedData.vertexData);
+        drawList = generatedData.drawList;
+    }
+
+    public Mallet(float radius, float height, int numPointsAroundMallet, Point point) {
+        this.pos = point;
+        GeneratedData generatedData = ObjectBuilder.createMallet(
+                point,radius, height, numPointsAroundMallet);
         this.radius = radius;
         this.height = height;
         vertexArray = new VertexArray(generatedData.vertexData);
@@ -52,5 +63,7 @@ public class Mallet {
         }
     }
 
-
+    public Point getPos() {
+        return pos;
+    }
 }
