@@ -26,6 +26,11 @@ public class OpenGLRendererPrincipal implements Renderer {
     private final float[] projectionMatrix = new float[16];
     private final float[] modelMatrix = new float[16];
 
+    private final float leftBound = -0.5f;
+    private final float rightBound = 0.5f;
+    private final float nearBound = 0.8f;
+    private final float farBound = -0.8f;
+
     private Table tabla;
     private Mallet redMallet;
     private Puck puck;
@@ -36,6 +41,10 @@ public class OpenGLRendererPrincipal implements Renderer {
 
     private boolean malletPressed = false;
     private Point redMalletPosition;
+    private Point previusRedMalletPosition;
+
+    private Point puckPosition;
+    private Vector puckVector;
 
 
     //Constructor
@@ -46,14 +55,14 @@ public class OpenGLRendererPrincipal implements Renderer {
     @Override
     public void onSurfaceCreated(GL10 glUnused, EGLConfig config) {
         glClearColor(0f, 0f, 0f, 0f);
-
         puck = new Puck(0.035f, 0.015f, 30);
+        puckPosition = new Point(0f, puck.height / 2f, 0f );
+        puckVector = new Vector(0f,0f,0f);
         //Point pos = new Point(0f, 0f, 0.2f);
         redMallet = new Mallet(0.060f, 0.090f, 30);
         //redMallet = new Mallet(0.060f, 0.090f, 30, pos);
         //redMalletPosition = new Point(0f, redMallet.height / 2f, 0f);
         redMalletPosition = new Point(0f, redMallet.height /2f , 0.4f);
-
         tabla = new Table();
         textureProgram = new TextureShaderProgram(context);
         colorProgram = new ColorShaderProgram(context);
@@ -76,13 +85,39 @@ public class OpenGLRendererPrincipal implements Renderer {
         multiplyMM(viewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
         invertM(invertedViewProjectionMatrix, 0, viewProjectionMatrix,0);
 
+        puckPosition = puckPosition.translate(puckVector);
+
+        if(puckPosition.x < leftBound + puck.radius ||
+                puckPosition.x > rightBound - puck.radius){
+            puckVector = new Vector(-puckVector.x, puckVector.y, puckVector.z);
+            puckVector = puckVector.scale(0.9f);
+        }
+        if(puckPosition.z < farBound + puck.radius ||
+                puckPosition.z > nearBound - puck.radius){
+            puckVector = new Vector(puckVector.x, puckVector.y, -puckVector.z);
+            puckVector = puckVector.scale(0.9f);
+        }
+        //Clamp the puck position
+        puckPosition = new Point(
+                clamp(
+                        puckPosition.x,
+                        leftBound + puck.radius,
+                        rightBound - puck.radius),
+                puckPosition.y,
+                clamp(
+                        puckPosition.z,
+                        farBound + puck.radius,
+                        nearBound - puck.radius)
+        );
+        puckVector = puckVector.scale(0.99f);
+
         positionTableInScene();
         textureProgram.useProgram();
         textureProgram.setUniforms(modelViewProjectionMatrix, texture);
         tabla.bindData(textureProgram);
         tabla.draw();
 
-        positionObjectInScene(0.0f, 0.0f, 0.0f );
+        positionObjectInScene(puckPosition.x, puckPosition.y, puckPosition.z);
         colorProgram.useProgram();
         colorProgram.setUniforms(modelViewProjectionMatrix);
         puck.bindData(colorProgram);
@@ -159,16 +194,21 @@ public class OpenGLRendererPrincipal implements Renderer {
 
         return new Ray(nearPointRay, Geometry.vectorBetween(nearPointRay, farPointRay));
     }
+
     private void divideByW(float[] vector){
         vector[0] /= vector[3];
         vector[1] /= vector[3];
         vector[2] /= vector[3];
     }
 
+    private float clamp(float value, float min, float max){
+        return Math.min(max, Math.max(value, min));
+    }
+
     public void handleTouchDrag(float normalizedX, float normalizedY){
-        Log.i(TAG, "movimiento  x = " + normalizedX + " , y = " + normalizedY);
+        //Log.i(TAG, "movimiento  x = " + normalizedX + " , y = " + normalizedY);
         if(malletPressed){
-            Log.i(TAG, "mallet presionado :");
+            //Log.i(TAG, "mallet presionado :");
             Ray ray = convertNormalized2DPointToRay(normalizedX, normalizedY);
             //Define a plane representing our air hockey table.
             Plane plane = new Plane(new Point(0, 0, 0), new Vector(0, 1, 0));
@@ -177,7 +217,25 @@ public class OpenGLRendererPrincipal implements Renderer {
             representing our table. well move the mallet along this plane.
              */
             Point touchedPoint = Geometry.intersectionPoint(ray, plane);
-            redMalletPosition = new Point(touchedPoint.x, redMallet.height / 2f, touchedPoint.z);
+            //redMalletPosition = new Point(touchedPoint.x, redMallet.height / 2f, touchedPoint.z);
+            previusRedMalletPosition = redMalletPosition;
+            redMalletPosition = new Point(
+                    clamp(touchedPoint.x,
+                            leftBound + redMallet.radius,
+                            rightBound - redMallet.radius),
+                    redMallet.height / 2f,
+                    clamp(touchedPoint.z,
+                            0f + redMallet.radius,
+                            nearBound - redMallet.radius)
+            );
+            float distance = Geometry.vectorBetween(redMalletPosition, puckPosition).length();
+            if( distance < (puck.radius + redMallet.radius)){
+                /*
+                The mallet has struck the puck. Now send the puck flying
+                based on the mallet velocity.
+                 */
+                puckVector = Geometry.vectorBetween(previusRedMalletPosition, redMalletPosition);
+            }
         }
     }
 }
