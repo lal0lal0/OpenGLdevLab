@@ -171,9 +171,9 @@ public class Geometry {
     }
 
     public static boolean intersects(Sphere sphere, Ray ray){
-        Log.i("intersect: ",  " esfera center: x: " +
-        sphere.center.x + " , y: " + sphere.center.y + " , z: " + sphere.center.z +
-        " el rayo : ray point x : " + ray.point.x + " , ray point.y " + ray.point.y + ", " +
+        Log.i("funcion intersect:",  " datos de la esfera,center x " +
+        sphere.center.x + " , y: " + sphere.center.y + " , z " + sphere.center.z +
+        " , el rayo ray point x : " + ray.point.x + " , ray point.y " + ray.point.y + ", " +
         " ray point.z " + ray.point.z);
         return distanceBetween(sphere.center, ray) < sphere.radius;
     }
