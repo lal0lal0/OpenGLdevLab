@@ -22,6 +22,9 @@ public class OpenGLRendererPrincipal implements Renderer {
     private final float[] viewProjectionMatrix = new float[16];
     private final float[] modelViewProjectionMatrix = new float[16];
     private final float[] invertedViewProjectionMatrix = new float[16];
+    //invertedMatrixCreated indica si ya ha sido creada la matriz
+    //la cual sirve para convertir las coordendas donde se hace el touch
+    private boolean invertedMatrixCreated = false;
 
     private final float[] projectionMatrix = new float[16];
     private final float[] modelMatrix = new float[16];
@@ -82,8 +85,10 @@ public class OpenGLRendererPrincipal implements Renderer {
     @Override
     public void onDrawFrame(GL10 gl10) {
         GLES20.glClear(GL_COLOR_BUFFER_BIT);
-        multiplyMM(viewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
-        invertM(invertedViewProjectionMatrix, 0, viewProjectionMatrix,0);
+
+        if(!invertedMatrixCreated){
+            enableInvertedMatrix(true);
+        };
 
         puckPosition = puckPosition.translate(puckVector);
 
@@ -92,11 +97,13 @@ public class OpenGLRendererPrincipal implements Renderer {
             puckVector = new Vector(-puckVector.x, puckVector.y, puckVector.z);
             puckVector = puckVector.scale(0.9f);
         }
+
         if(puckPosition.z < farBound + puck.radius ||
                 puckPosition.z > nearBound - puck.radius){
             puckVector = new Vector(puckVector.x, puckVector.y, -puckVector.z);
             puckVector = puckVector.scale(0.9f);
         }
+
         //Clamp the puck position
         puckPosition = new Point(
                 clamp(
@@ -155,7 +162,8 @@ public class OpenGLRendererPrincipal implements Renderer {
     }
 
     public void handleTouchPress(float normalizedX, float normalizedY){
-        Log.i(TAG, " TouchPress -> movimiento en x = " + normalizedX + ", y = " + normalizedY);
+        recallInvertedMatrix();
+        Log.i("Touch en:", "x=" + normalizedX + ",y=" + normalizedY);
         Ray ray = convertNormalized2DPointToRay(normalizedX, normalizedY);
         // Now test if this ray intersects with the mallet by creating
         //   a bounding sphere that wraps the mallet.
@@ -206,12 +214,13 @@ public class OpenGLRendererPrincipal implements Renderer {
     }
 
     public void handleTouchDrag(float normalizedX, float normalizedY){
-        //Log.i(TAG, "movimiento  x = " + normalizedX + " , y = " + normalizedY);
         if(malletPressed){
-            //Log.i(TAG, "mallet presionado :");
             Ray ray = convertNormalized2DPointToRay(normalizedX, normalizedY);
             //Define a plane representing our air hockey table.
-            Plane plane = new Plane(new Point(0, 0, 0), new Vector(0, 1, 0));
+            Plane plane = new Plane(
+                    new Point(0, 0, 0),
+                    new Vector(0, 1, 0)
+            );
             /*
             find out where the touched point intersects the plane
             representing our table. well move the mallet along this plane.
@@ -219,6 +228,17 @@ public class OpenGLRendererPrincipal implements Renderer {
             Point touchedPoint = Geometry.intersectionPoint(ray, plane);
             //redMalletPosition = new Point(touchedPoint.x, redMallet.height / 2f, touchedPoint.z);
             previusRedMalletPosition = redMalletPosition;
+            /*
+            redMalletPosition = new Point(
+                    clamp(touchedPoint.x,
+                            leftBound + redMallet.radius,
+                            rightBound - redMallet.radius),
+                    redMallet.height / 2f,
+                    clamp(touchedPoint.z,
+                            -2f + redMallet.radius,
+                            2f)
+            );
+            */
             redMalletPosition = new Point(
                     clamp(touchedPoint.x,
                             leftBound + redMallet.radius,
@@ -228,14 +248,95 @@ public class OpenGLRendererPrincipal implements Renderer {
                             0f + redMallet.radius,
                             nearBound - redMallet.radius)
             );
+
             float distance = Geometry.vectorBetween(redMalletPosition, puckPosition).length();
-            if( distance < (puck.radius + redMallet.radius)){
+            float hipotenusa = (float)Math.sqrt(
+                    (redMalletPosition.x * redMalletPosition.x)
+                            +
+                            (redMalletPosition.z * redMalletPosition.z)
+            );
+            double senoDelAngulo = (redMalletPosition.z / redMalletPosition.x);
+            double anguloEnRadianes = Math.atan(senoDelAngulo);
+            double cosenoDelangulo = Math.cos(anguloEnRadianes);
+            double senoDelAngulo2 = Math.sin(anguloEnRadianes);
+            Log.i("TouchDrag","last posicion onDrag " +
+                    " x = " + redMalletPosition.x + ","  +
+                    " y = " + redMalletPosition.y + ", " +
+                    " z = " + redMalletPosition.z);
+            Log.i("TouchDrag","" +
+                    " Hipotenusa = " + hipotenusa +
+            ", seno del angulo = " + senoDelAngulo +
+            ", angulo = " + anguloEnRadianes +
+            " , el coseno es: " + cosenoDelangulo +
+            ",  el seno inverso es " + senoDelAngulo2);
+
+            //Colision detectada
+            if( distance < (puck.radius + redMallet.radius) ){
                 /*
                 The mallet has struck the puck. Now send the puck flying
                 based on the mallet velocity.
                  */
-                puckVector = Geometry.vectorBetween(previusRedMalletPosition, redMalletPosition);
+                //Log.d("handleTouchDrag()","el mallet colisiono con el puck");
+                //Vector vec = puckVector;
+                //Vector vec = Geometry.vectorBetween(previusRedMalletPosition, redMalletPosition);
+                //Log.i("angulo ", " es: " + getAngleOfLineBetweenTwoPoints(redMalletPosition, previusRedMalletPosition) );
+                //Vector vec2 = new Vector(redMalletPosition.x, redMalletPosition.y, redMalletPosition.z);
+                //float ang = (float)Math.acos(vec.dotProduct(vec2));
+                //Log.i("angulo","es " + Math.toDegrees(ang));
+
+                Vector previusPuckVector = puckVector;
+                Vector newPuckVector;
+
+                newPuckVector = Geometry.vectorBetween(previusRedMalletPosition, redMalletPosition);
+                puckVector = new Vector(- newPuckVector.x * (float)Math.cos(anguloEnRadianes),
+                        newPuckVector.y,
+                        newPuckVector.z  );
+                //Vector tempVector = Geometry.vectorBetween(previusRedMalletPosition, redMalletPosition);
+                //puckVector = new Vector(tempVector.x + puck.radius * (float)Math.cos(angleinradians),
+                  //      0f,
+                    //    puckVector.z + puck.radius * (float)Math.sin(angleinradians));;
+                //Vector newVector = new Vector(puckVector.x + puck.radius * (float)Math.cos(angleinradians),
+                  //      0f,
+                    //    puckVector.z + puck.radius * (float)Math.sin(angleinradians));
+
+                //puckVector = new Vector(puckVector.x + puck.radius * (float)Math.cos(angleinradians),
+                  //      0f,
+                    //    puckVector.z + puck.radius * (float)Math.sin(angleinradians));
+                //Point punto = new Point(vec.x,
+                  //      vec.y,
+                    //    vec.z);
+
+                //puckVector = new Vector(punto.x, punto.y,punto.z);
             }
         }
+    }
+
+
+
+    private void enableInvertedMatrix(boolean activar){
+        Log.i("enableInvertedMatrix",
+                "ejecutando enableInvertedMatrix , status: " + invertedMatrixCreated);
+       if(invertedMatrixCreated == false && activar == true){
+           invertM(invertedViewProjectionMatrix, 0, viewProjectionMatrix,0);
+           multiplyMM(viewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
+           invertedMatrixCreated = true;
+       }else if(invertedMatrixCreated == true && activar == false){
+           invertedMatrixCreated = false;
+       }
+    }
+
+    private void recallInvertedMatrix(){
+        Log.i("recallInvertedMatrix"," llamada a la funcion.!");
+        if(invertedMatrixCreated ){
+            invertM(invertedViewProjectionMatrix, 0, viewProjectionMatrix,0);
+            multiplyMM(viewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
+        }
+    }
+
+    public static double getAngleOfLineBetweenTwoPoints(Point p1, Point p2)
+    {
+        double xDiff = p2.x - p1.x;
+        double yDiff = p2.y - p1.y;
+        return Math.toDegrees(Math.atan2(yDiff, xDiff));
     }
 }

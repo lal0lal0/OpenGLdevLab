@@ -160,6 +160,14 @@ public class Geometry {
         );
     }
 
+    public static Vector crossProductPublic(Vector from, Vector other){
+        return new Vector(
+                (from.y * other.z) - (from.z * other.y),
+                (from.z * other.x) - (from.x * other.z),
+                (from.x * other.y) - (from.y * other.x)
+        );
+    }
+
     public static class Sphere{
         public final Point center;
         public final float radius;
@@ -171,10 +179,10 @@ public class Geometry {
     }
 
     public static boolean intersects(Sphere sphere, Ray ray){
-        Log.i("funcion intersect:",  " datos de la esfera,center x " +
-        sphere.center.x + " , y: " + sphere.center.y + " , z " + sphere.center.z +
-        " , el rayo ray point x : " + ray.point.x + " , ray point.y " + ray.point.y + ", " +
-        " ray point.z " + ray.point.z);
+        //Log.i("funcion intersect:",  " datos de la esfera,center x " +
+        //sphere.center.x + " , y: " + sphere.center.y + " , z " + sphere.center.z +
+        //" , el rayo ray point x : " + ray.point.x + " , ray point.y " + ray.point.y + ", " +
+        //" ray point.z " + ray.point.z);
         return distanceBetween(sphere.center, ray) < sphere.radius;
     }
 
@@ -219,5 +227,25 @@ public class Geometry {
         }
     }
 
+    public static double calculateAngle(double x1, double y1, double x2, double y2)
+    {
+        double angleinradian = Math.atan2(x2 - x1, y2 - y1);
+        double angle = Math.toDegrees(Math.atan2(x2 - x1, y2 - y1));
+        // Keep angle between 0 and 360
+        angle = angle + Math.ceil( -angle / 360 ) * 360;
+        Log.i("calculateAngle","el angulo en radianes es:" + angleinradian +
+                ", en grados es: " + angle);
+        return angle;
+    }
+    public static double calculateAngleInRadian(double x1, double y1, double x2, double y2)
+    {
+        double angleinradian = Math.atan2(x2 - x1, y2 - y1);
+        double angle = Math.toDegrees(Math.atan2(x2 - x1, y2 - y1));
+        // Keep angle between 0 and 360
+        angle = angle + Math.ceil( -angle / 360 ) * 360;
+        Log.i("calculateAngle","el angulo en radianes es:" + angleinradian +
+                ", en grados es: " + angle);
+        return angleinradian;
+    }
 
 }
